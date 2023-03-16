@@ -3,6 +3,7 @@ package mvc
 import (
 	"net/http"
 	"path"
+	"reflect"
 
 	"github.com/kataras/iris/v12/context"
 )
@@ -32,6 +33,8 @@ type GRPC struct {
 	// When Strict option is true then this controller will only serve gRPC-based clients
 	// and fires 404 on common HTTP clients.
 	Strict bool
+
+	ExtStruct interface{}
 }
 
 var _ Option = GRPC{}
@@ -60,6 +63,20 @@ func (g GRPC) Apply(c *ControllerActivator) {
 
 	for i := 0; i < c.Type.NumMethod(); i++ {
 		m := c.Type.Method(i)
+		flag := false
+		if g.ExtStruct != nil {
+			structVal := reflect.TypeOf(g.ExtStruct)
+			for i := 0; i < structVal.NumMethod(); i++ {
+				methodVal := structVal.Method(i).Name
+				if m.Name == methodVal {
+					flag = true
+					break
+				}
+			}
+		}
+		if flag {
+			continue
+		}
 		path := path.Join(g.ServiceName, m.Name)
 		if g.Strict {
 			c.app.Router.HandleMany(http.MethodPost, path, pre)

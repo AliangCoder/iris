@@ -54,6 +54,7 @@ func newApp() *iris.Application {
 			Server:      grpcServer,           // Required.
 			ServiceName: "helloworld.Greeter", // Required.
 			Strict:      false,
+			ExtStruct:   &BaseController{},
 		})
 
 	return app
@@ -72,7 +73,7 @@ func (s *myService) DoSomething() error {
 
 type myController struct {
 	// Ctx iris.Context
-
+	BaseController
 	SingletonDependency service
 }
 
